@@ -1,23 +1,45 @@
 # AI Lab 2: Games and ConnectFour 
 
-# Name(s): 
-# Email(s): 
+# Name(s): Aidan Glickman, Lennon Okun
+# Email(s): aidgli20@bergen.org, lenoku20@bergen.org
 
 from game_api import *
 from boards import *
 from toytree import GAME1
 from time import time
-
-
+import numpy as np
 INF = float('inf')
+
+H = 6
+W = 7
 
 # Please see wiki lab page for full description of functions and API.
 
 #### Part 1: Utility Functions #################################################
 
+def iswin(arr):
+    for i in range(arr.shape[0]-3):
+        subarr = arr[i:i+4]
+        if np.allclose(subarr, subarr[0]):
+            return True
+
+    return False
+
 def is_game_over_connectfour(board):
-    """Returns True if game is over, otherwise False."""
-    raise NotImplementedError 
+    # Returns True if game is over, otherwise False.
+    grid = board.board_array #TODO board array rename something not icky
+    n = grid.shape[0]
+    rot_grid = np.rot90(grid)
+
+    for x in range(n):
+        if iswin(grid[x]) or iswin(rot_grid[x]):
+            return True
+
+    for x in range(1-n,n): # change, bc diagonal is different for each side hardcode width height
+        if iswin(np.diagonal(grid,offset=x)) or iswin(np.diagonal(rot_grid,offset=x)):
+            return True
+
+    return False
 
 def next_boards_connectfour(board):
     """Returns a list of ConnectFourBoard objects that could result from the
