@@ -58,7 +58,7 @@ class AbstractGameState :
         return deepcopy(self)
 
 
-class ConnectFourBoard :
+class ConnectFourBoard : # TODO: not really todo but this api is big unoptimized use numpy amirite
     num_rows = 6  # board height
     num_cols = 7  # board width
 

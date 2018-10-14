@@ -22,14 +22,14 @@ COL_RANGE = list(range(W))
 def iswin(arr):
     for i in range(arr.shape[0]-3):
         subarr = arr[i:i+4]
-        if np.allclose(subarr, subarr[0]):
+        if np.allclose(subarr, 1) or np.allclose(subarr, 2):
             return True
 
     return False
 
 DIAG_RANGE = list(range(-H+4, W-3))
 DIAG_RANGE_R90 = list(range(-W+4, H-3))
-
+# TODO: maybe just have to do as he expected bc his api runs pretty deep and everything uses it and its rly icky
 def is_game_over_connectfour(board):
     # Returns True if game is over, otherwise False.
     grid = board.board_array #TODO board array rename something not icky
@@ -51,7 +51,9 @@ def is_game_over_connectfour(board):
     return False
 
 def next_boards_connectfour(board):
-    
+    for j in COL_RANGE:
+
+
     """Returns a list of ConnectFourBoard objects that could result from the
     next move, or an empty list if no moves can be made."""
     raise NotImplementedError
