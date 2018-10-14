@@ -13,6 +13,8 @@ INF = float('inf')
 H = 6
 W = 7
 
+ROW_RANGE = list(range(H))
+COL_RANGE = list(range(W))
 # Please see wiki lab page for full description of functions and API.
 
 #### Part 1: Utility Functions #################################################
@@ -25,23 +27,31 @@ def iswin(arr):
 
     return False
 
+DIAG_RANGE = list(range(-H+4, W-3))
+DIAG_RANGE_R90 = list(range(-W+4, H-3))
+
 def is_game_over_connectfour(board):
     # Returns True if game is over, otherwise False.
     grid = board.board_array #TODO board array rename something not icky
-    n = grid.shape[0]
-    rot_grid = np.rot90(grid)
 
-    for x in range(n):
-        if iswin(grid[x]) or iswin(rot_grid[x]):
+    if any(np.apply_along_axis(iswin, 0, grid)) or any(np.apply_along_axis(iswin, 1, grid)):
+        return True
+
+    for x in DIAG_RANGE: # change, bc diagonal is different for each side hardcode width height
+        if iswin(np.diagonal(grid,offset=x)):
             return True
 
-    for x in range(1-n,n): # change, bc diagonal is different for each side hardcode width height
-        if iswin(np.diagonal(grid,offset=x)) or iswin(np.diagonal(rot_grid,offset=x)):
+    grid.rot90()
+    for x in DIAG_RANGE_R90:
+        if iswin(np.diagonal(grid, offset=x)):
+            grid.rot90()
             return True
 
+    grid.rot90()
     return False
 
 def next_boards_connectfour(board):
+    
     """Returns a list of ConnectFourBoard objects that could result from the
     next move, or an empty list if no moves can be made."""
     raise NotImplementedError
