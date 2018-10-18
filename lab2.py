@@ -8,7 +8,9 @@ from boards import *
 from toytree import GAME1
 from time import time
 import numpy as np
+import math
 INF = float('inf')
+
 
 H = 6
 W = 7
@@ -19,55 +21,32 @@ COL_RANGE = list(range(W))
 
 #### Part 1: Utility Functions #################################################
 
-def iswin(arr):
-    for i in range(arr.shape[0]-3):
-        subarr = arr[i:i+4]
-        if np.allclose(subarr, 1) or np.allclose(subarr, 2):
-            return True
-
-    return False
-
-DIAG_RANGE = list(range(-H+4, W-3))
-DIAG_RANGE_R90 = list(range(-W+4, H-3))
 # TODO: maybe just have to do as he expected bc his api runs pretty deep and everything uses it and its rly icky
 def is_game_over_connectfour(board):
     # Returns True if game is over, otherwise False.
-    grid = board.board_array #TODO board array rename something not icky
-
-    if any(np.apply_along_axis(iswin, 0, grid)) or any(np.apply_along_axis(iswin, 1, grid)):
-        return True
-
-    for x in DIAG_RANGE: # change, bc diagonal is different for each side hardcode width height
-        if iswin(np.diagonal(grid,offset=x)):
-            return True
-
-    grid.rot90()
-    for x in DIAG_RANGE_R90:
-        if iswin(np.diagonal(grid, offset=x)):
-            grid.rot90()
-            return True
-
-    grid.rot90()
-    return False
+    return any(len(chain) > 4 for chain in board.get_all_chains())
 
 def next_boards_connectfour(board):
-    for j in COL_RANGE:
-
-
     """Returns a list of ConnectFourBoard objects that could result from the
     next move, or an empty list if no moves can be made."""
-    raise NotImplementedError
+    return (board.add_piece(col) for col in COL_RANGE
+                if board.get_column_height(col) != H)
 
 def endgame_score_connectfour(board, is_current_player_maximizer):
     """Given an endgame board, returns 1000 if the maximizer has won,
-    -1000 if the minimizer has won, or 0 in case of a tie."""
-    raise NotImplementedError
+        -1000 if the minimizer has won, or 0 in case of a tie."""
+    #TODO
+    if next((chain for chain in board.get_all_chains() if len(chain) > 4)):
+        return 1000 if is_current_player_maximizer else -1000
+    else:
+        return 0
+
 
 
 def endgame_score_connectfour_faster(board, is_current_player_maximizer):
     """Given an endgame board, returns an endgame score with abs(score) >= 1000,
-    returning larger absolute scores for winning sooner."""
-    raise NotImplementedError
+        returning larger absolute scores for winning sooner."""
+    return endgame_score_connectfour(board, is_current_player_maximizer) * (math.e ** -board.count_pieces() + 1)
 
 # Now we can create AbstractGameState objects for Connect Four, using some of
 # the functions you implemented above.  You can use the following examples to
@@ -97,6 +76,7 @@ state_UHOH = AbstractGameState(snapshot = BOARD_UHOH,
 # Note: Functions in Part 2 use the AbstractGameState API, not ConnectFourBoard.
 
 def dfs_maximizing(state) :
+
     """Performs depth-first search to find path with highest endgame score.
     Returns a tuple containing:
      0. the best path (a list of AbstractGameState objects),

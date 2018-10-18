@@ -58,7 +58,7 @@ class AbstractGameState :
         return deepcopy(self)
 
 
-class ConnectFourBoard : # TODO: not really todo but this api is big unoptimized use numpy amirite
+class ConnectFourBoard :
     num_rows = 6  # board height
     num_cols = 7  # board width
 
@@ -396,7 +396,7 @@ def move_sequence(state, move_indexes=[]) :
 class ConnectFourPlayer(ABC) :
     def __init__(self):
         if self.name == None:
-        	self.name = "ConnectFourPlayer"
+            self.name = "ConnectFourPlayer"
         super().__init__()
 
     def get_name(self):
