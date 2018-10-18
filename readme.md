@@ -12,3 +12,4 @@ check both directions
 check for chains that have a gap in them
 check for big gay
 check for double traps?
+good moves first?
