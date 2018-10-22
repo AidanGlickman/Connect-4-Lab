@@ -82,7 +82,27 @@ def dfs_maximizing(state) :
      0. the best path (a list of AbstractGameState objects),
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
-    raise NotImplementedError
+    stats = [0, None]
+    dfsmax(state, stats)
+    path = []
+    node = stats[1]
+    score = stats[1].get_endgame_score()
+    while node:
+        path.append(node)
+        node = node.parent
+    path.reverse()
+
+    return (path, score, stats[0])
+
+
+def dfsmax(state, stats):
+    for child in state.generate_next_states():
+        if child.is_game_over():
+            stats[0] += 1
+            if stats[1] and stats[1].get_endgame_score() < child.get_endgame_score():
+                stats[1] = child
+        else:
+            dfsmax(child, stats)
 
 
 # Uncomment the line below to try your dfs_maximizing on an

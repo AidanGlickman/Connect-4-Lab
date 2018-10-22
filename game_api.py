@@ -13,13 +13,14 @@ class AbstractGameState :
                  snapshot,
                  is_game_over_fn,
                  generate_next_states_fn,
-                 endgame_score_fn) :
+                 endgame_score_fn, parent=None) :
 
         self.snapshot = snapshot
         self.starting_state = snapshot
         self.is_game_over_fn = is_game_over_fn
         self.generate_next_states_fn = generate_next_states_fn
         self.endgame_score_fn = endgame_score_fn
+        self.parent = parent
 
     def __str__(self) :
         return "\n<AbstractGameState representing:\n" + self.snapshot.__str__() + "\n>"
@@ -30,7 +31,7 @@ class AbstractGameState :
 
     def wrap(self, snapshot) :
         return AbstractGameState(snapshot, self.is_game_over_fn,
-                                 self.generate_next_states_fn, self.endgame_score_fn)
+                                 self.generate_next_states_fn, self.endgame_score_fn, self)
 
     def get_snapshot(self):
         return self.snapshot
