@@ -104,7 +104,6 @@ def dfsmax(state, stats):
         else:
             dfsmax(child, stats)
 
-
 # Uncomment the line below to try your dfs_maximizing on an
 # AbstractGameState representing the games tree "GAME1" from toytree.py:
 
@@ -117,8 +116,33 @@ def minimax_endgame_search(state, maximize=True) :
      0. the best path (a list of AbstractGameState objects),
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
-    raise NotImplementedError
+    stats = [0]
+    state = minimax(state, maximize, stats)
+    path = []
+    node = state
+    score = state.get_endgame_score()
+    while node:
+        path.append(node)
+        node = node.parent
+    path.reverse()
 
+    return (path, stats, score)
+
+def minimax(state, stats, maximize):
+    if state.is_game_over():
+        stats[0] += 1
+        return state
+    if maximize:
+        value = -INF
+        for child in state.generate_next_states():
+            value = max((value, minimax(child, True).get_endgame_score()))
+        return state
+    else:
+        value = INF
+        for child in state.generate_next_states():
+            value = min((value, minimax(child, True).get_endgame_score()))
+        return state
+        
 # Uncomment the line below to try your minimax_endgame_search on an
 # AbstractGameState representing the ConnectFourBoard "NEARLY_OVER" from boards.py:
 
