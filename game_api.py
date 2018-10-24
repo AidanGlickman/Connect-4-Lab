@@ -13,17 +13,18 @@ class AbstractGameState :
                  snapshot,
                  is_game_over_fn,
                  generate_next_states_fn,
-                 endgame_score_fn, parent=None) :
+                 endgame_score_fn) :
 
         self.snapshot = snapshot
         self.starting_state = snapshot
         self.is_game_over_fn = is_game_over_fn
         self.generate_next_states_fn = generate_next_states_fn
         self.endgame_score_fn = endgame_score_fn
-        self.parent = parent
 
     def __str__(self) :
         return "\n<AbstractGameState representing:\n" + self.snapshot.__str__() + "\n>"
+
+    #__repr__ = __str__
 
     def __eq__(self, other):
         return (is_class_instance(other, 'AbstractGameState')
@@ -31,7 +32,7 @@ class AbstractGameState :
 
     def wrap(self, snapshot) :
         return AbstractGameState(snapshot, self.is_game_over_fn,
-                                 self.generate_next_states_fn, self.endgame_score_fn, self)
+                                 self.generate_next_states_fn, self.endgame_score_fn)
 
     def get_snapshot(self):
         return self.snapshot
@@ -340,10 +341,10 @@ class AnytimeValue :
         return self.value
 
     def get_history(self) :
-    	return self.history
+        return self.history
 
     def get_total_evaluations(self):
-    	return self.total_evaluations
+        return self.total_evaluations
 
     def pretty_print(self):
         print('*** Begin printing AnytimeValue history ***\n')

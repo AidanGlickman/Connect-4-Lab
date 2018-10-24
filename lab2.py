@@ -24,20 +24,22 @@ COL_RANGE = list(range(W))
 # TODO: maybe just have to do as he expected bc his api runs pretty deep and everything uses it and its rly icky
 def is_game_over_connectfour(board):
     # Returns True if game is over, otherwise False.
-    return any(len(chain) > 4 for chain in board.get_all_chains())
+    return any(len(chain) >= 4 for chain in board.get_all_chains()) \
+    or all(board.is_column_full(col) for col in COL_RANGE)
 
 def next_boards_connectfour(board):
     """Returns a list of ConnectFourBoard objects that could result from the
     next move, or an empty list if no moves can be made."""
-    return (board.add_piece(col) for col in COL_RANGE
-                if board.get_column_height(col) != H)
+    return list(board.add_piece(col) for col in COL_RANGE
+                if not board.is_column_full(col)) \
+            if not is_game_over_connectfour(board) else []
 
 def endgame_score_connectfour(board, is_current_player_maximizer):
     """Given an endgame board, returns 1000 if the maximizer has won,
         -1000 if the minimizer has won, or 0 in case of a tie."""
     #TODO
-    if next((chain for chain in board.get_all_chains() if len(chain) > 4)):
-        return 1000 if is_current_player_maximizer else -1000
+    if next((chain for chain in board.get_all_chains() if len(chain) >= 4), None):
+        return -1000 if is_current_player_maximizer else 1000
     else:
         return 0
 
@@ -83,26 +85,23 @@ def dfs_maximizing(state) :
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
     stats = [0, None]
-    dfsmax(state, stats)
-    path = []
-    node = stats[1]
+    path = dfsmax(state, stats)
     score = stats[1].get_endgame_score()
-    while node:
-        path.append(node)
-        node = node.parent
-    path.reverse()
 
     return (path, score, stats[0])
 
 
 def dfsmax(state, stats):
-    for child in state.generate_next_states():
-        if child.is_game_over():
-            stats[0] += 1
-            if stats[1] and stats[1].get_endgame_score() < child.get_endgame_score():
-                stats[1] = child
-        else:
-            dfsmax(child, stats)
+    if state.is_game_over():
+        stats[0] += 1
+        if not stats[1] or state.get_endgame_score() > stats[1].get_endgame_score():
+            stats[1] = state
+
+        return [state]
+
+    to_add =  max((dfsmax(child, stats) for child in state.generate_next_states()), key = lambda x: x[-1].get_endgame_score())
+    return [state] + to_add 
+
 
 # Uncomment the line below to try your dfs_maximizing on an
 # AbstractGameState representing the games tree "GAME1" from toytree.py:
@@ -117,36 +116,27 @@ def minimax_endgame_search(state, maximize=True) :
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
     stats = [0]
-    state = minimax(state, maximize, stats)
-    path = []
-    node = state
-    score = state.get_endgame_score()
-    while node:
-        path.append(node)
-        node = node.parent
-    path.reverse()
-
-    return (path, stats, score)
+    path, score = minimax(state, stats, maximize)
+    return (path, score, stats[0])
 
 def minimax(state, stats, maximize):
     if state.is_game_over():
         stats[0] += 1
-        return state
+        return [state], state.get_endgame_score(maximize)
     if maximize:
-        value = -INF
-        for child in state.generate_next_states():
-            value = max((value, minimax(child, True).get_endgame_score()))
-        return state
+        path, value = max((minimax(child, stats, False) for child in state.generate_next_states()),
+            key = lambda x: x[1])
+        return [state] + path, value
     else:
-        value = INF
-        for child in state.generate_next_states():
-            value = min((value, minimax(child, True).get_endgame_score()))
-        return state
+        value = 1000
+        path, value = min((minimax(child, stats, True) for child in state.generate_next_states()),
+            key = lambda x: x[1])
+        return [state] + path, value
         
 # Uncomment the line below to try your minimax_endgame_search on an
 # AbstractGameState representing the ConnectFourBoard "NEARLY_OVER" from boards.py:
 
-# pretty_print_dfs_type(minimax_endgame_search(state_NEARLY_OVER))
+#pretty_print_dfs_type(minimax_endgame_search(state_NEARLY_OVER))
 
 
 #### Part 3: Cutting off and Pruning search #############################################
@@ -156,8 +146,18 @@ def heuristic_connectfour(board, is_current_player_maximizer):
     """Given a non-endgame board, returns a heuristic score with
     abs(score) < 1000, where higher numbers indicate that the board is better
     for the maximizer."""
-    raise NotImplementedError
-    
+    # TODO: maybe change api add extra thing to discard dead chains
+    heur = 0
+    player1_chains = board.get_all_chains(True)    
+    player2_chains = board.get_all_chains(False)
+
+    for p1_chain in player1_chains:
+        heur += len(p1_chain)**2
+    for p2_chain in player2_chains:
+        heur -= len(p2_chain)**2
+
+    return heur if is_current_player_maximizer else -heur
+
 
 ## Note that the signature of heuristic_fn is heuristic_fn(board, maximize=True)
 
