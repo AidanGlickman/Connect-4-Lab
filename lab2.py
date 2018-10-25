@@ -146,7 +146,8 @@ def heuristic_connectfour(board, is_current_player_maximizer):
     """Given a non-endgame board, returns a heuristic score with
     abs(score) < 1000, where higher numbers indicate that the board is better
     for the maximizer."""
-    # TODO: maybe change api add extra thing to discard dead chains
+    # TODO: maybe subtract dead chains
+
     heur = 0
     player1_chains = board.get_all_chains(True)    
     player2_chains = board.get_all_chains(False)
@@ -168,7 +169,27 @@ def minimax_search(state, heuristic_fn=always_zero, depth_limit=INF, maximize=Tr
      0. the best path (a list of AbstractGameState objects),
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
-    raise NotImplementedError
+
+    stats = [0]
+    path, score = hminimax(state, heuristic_fn, depth_limit, stats, maximize)
+    return (path, score, stats[0])
+
+def hminimax(state, heuristic_fn, depth_limit, stats, maximize):
+    if state.is_game_over():
+        stats[0] += 1
+        return [state], state.get_endgame_score(maximize)
+    if depth_limit == 0: # TODO: maybe 1
+        stats[0] += 1
+        return [state], heuristic_fn(state.snapshot, maximize)
+    if maximize:
+        path, value = max((hminimax(child, heuristic_fn, depth_limit-1, stats, False) for child in state.generate_next_states()),
+            key = lambda x: x[1])
+        return [state] + path, value
+    else:
+        value = 1000
+        path, value = min((hminimax(child, heuristic_fn, depth_limit-1, stats, True) for child in state.generate_next_states()),
+            key = lambda x: x[1])
+        return [state] + path, value
 
 # Uncomment the line below to try minimax_search with "BOARD_UHOH" and
 # depth_limit=1. Try increasing the value of depth_limit to see what happens:
@@ -182,7 +203,42 @@ def minimax_search_alphabeta(state, alpha=-INF, beta=INF, heuristic_fn=always_ze
      0. the best path (a list of AbstractGameState objects),
      1. the score of the leaf node (a number), and
      2. the number of static evaluations performed (a number)"""
-    raise NotImplementedError
+    stats = [0]
+    path, score = abminimax(state, alpha, beta, heuristic_fn, depth_limit, stats, maximize)
+    return (path, score, stats[0])
+
+def abminimax(state, alpha, beta, heuristic_fn, depth_limit, stats, maximize):
+    if state.is_game_over():
+        stats[0] += 1
+        return [state], state.get_endgame_score(maximize)
+    if depth_limit == 0: # TODO: maybe 1
+        stats[0] += 1
+        return [state], heuristic_fn(state.snapshot, maximize)
+
+    children = state.generate_next_states()
+
+    if maximize:
+        val = -INF
+        path = None
+        for child in children:
+            path2, val2 = abminimax(child, alpha, beta, heuristic_fn, depth_limit-1, stats, False)
+            if val2 > val:
+                val, path = val2, path2
+            alpha = max(alpha, val)
+            if alpha >= beta:
+                break
+        return [state] + path, val
+    else:
+        val = INF
+        path = None
+        for child in children:
+            path2, val2 = abminimax(child, alpha, beta, heuristic_fn, depth_limit-1, stats, True)
+            if val2 < val:
+                val, path = val2, path2
+            beta = min(beta, val)
+            if alpha >= beta:
+                break
+        return [state] + path, val
 
 
 # Uncomment the line below to try minimax_search_alphabeta with "BOARD_UHOH" and
